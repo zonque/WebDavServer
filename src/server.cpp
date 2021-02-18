@@ -63,13 +63,12 @@ static std::string urlEncode(const std::string &value) {
 
 std::string WebDavServer::uriToPath(std::string uri) {
         if (uri.find(rootURI) != 0)
-                return "";
+                return rootPath;
 
         std::string path = rootPath + uri.substr(rootURI.length());
         while (path.substr(path.length()-1, 1) == "/")
                 path = path.substr(0, path.length()-1);
 
-        // return path;
         return urlDecode(path);
 }
 
@@ -95,6 +94,7 @@ std::string WebDavServer::formatTime(time_t t) {
 int WebDavServer::sendPropResponse(WebDavResponse &resp, std::string path, int recurse) {
         struct stat sb;
         int ret = stat(path.c_str(), &sb);
+
         if (ret < 0)
                 return -errno;
 
@@ -355,7 +355,6 @@ int WebDavServer::doProppatch(WebDavRequest &req, WebDavResponse &resp) {
 
 int WebDavServer::doPut(WebDavRequest &req, WebDavResponse &resp) {
         bool exists = access(req.getPath().c_str(), R_OK) == 0;
-
         FILE *f = fopen(req.getPath().c_str(), "w");
         if (!f)
                 return 404;

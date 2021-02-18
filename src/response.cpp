@@ -12,7 +12,20 @@ void WebDavResponse::setDavHeaders() {
         setHeader("Allow", "PROPFIND,OPTIONS,DELETE,COPY,MOVE,HEAD,POST,PUT,GET");
 }
 
+void WebDavResponse::setHeader(std::string header, std::string value) {
+        headers[header] = value;
+}
+
+void WebDavResponse::setHeader(std::string header, size_t value) {
+        char tmp[32];
+        snprintf(tmp, sizeof(tmp), "%u", value);
+        headers[header] = tmp;
+}
+
 bool WebDavResponse::flush() {
+        for (const auto &h: headers)
+                writeHeader(h.first.c_str(), h.second.c_str());
+
         if (!responses.empty()) {
                 setStatus(207, "Multi-Status");
                 contentType = "text/xml; charset=\"utf-8\"";
@@ -63,5 +76,5 @@ bool WebDavResponse::flush() {
                 return setContent(printer.CStr(), printer.CStrSize()-1);
         }
 
-        return false;
+        return setContent("", 0);
 }

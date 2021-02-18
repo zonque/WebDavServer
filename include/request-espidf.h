@@ -8,10 +8,7 @@
 class WebDavRequestEspIdf : public WebDavRequest {
 public:
         WebDavRequestEspIdf(httpd_req_t *req, std::string path) :
-                WebDavRequest(path), req(req) {
-                depth = DEPTH_INFINITY;
-                overwrite = true;
-        }
+                WebDavRequest(path), req(req) {}
 
         std::string getHeader(std::string name) override {
                 size_t len = httpd_req_get_hdr_value_len(req, name.c_str());

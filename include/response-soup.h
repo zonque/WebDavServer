@@ -16,14 +16,8 @@ public:
                 soup_message_set_status_full(msg, code, message.c_str());
         }
 
-        void setHeader(std::string header, std::string value) override {
-                soup_message_headers_append(msg->response_headers, header.c_str(), value.c_str());
-        }
-
-        void setHeader(std::string header, size_t value) override {
-                char tmp[16];
-                snprintf(tmp, sizeof(tmp), "%lu", value);
-                soup_message_headers_append(msg->response_headers, header.c_str(), tmp);
+        void writeHeader(const char *header, const char *value) override {
+                soup_message_headers_append(msg->response_headers, header, value);
         }
 
         bool setContent(const char *buf, size_t len) override {

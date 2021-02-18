@@ -7,25 +7,24 @@
 
 class WebDavResponseEspIdf : public WebDavResponse {
 public:
-        WebDavResponseEspIdf(httpd_req_t *req) : req(req) {
+        WebDavResponseEspIdf(httpd_req_t *req) : req(req), status(NULL) {
                 setDavHeaders();
         }
 
+        ~WebDavResponseEspIdf() {
+                free(status);
+        }
+
         void setStatus(int code, std::string message) override {
-                char *s;
-                asprintf(&s, "%d %s", code, message.c_str());
-                httpd_resp_set_status(req, s);
-                free(s);
+                free(status);
+                status = NULL;
+
+                asprintf(&status, "%d %s", code, message.c_str());
+                httpd_resp_set_status(req, status);
         }
 
-        void setHeader(std::string header, std::string value) override {
-                httpd_resp_set_hdr(req, header.c_str(), value.c_str());
-        }
-
-        void setHeader(std::string header, size_t value) override {
-                char tmp[32];
-                snprintf(tmp, sizeof(tmp), "%u", value);
-                httpd_resp_set_hdr(req, header.c_str(), tmp);
+        void writeHeader(const char *header, const char *value) override {
+                httpd_resp_set_hdr(req, header, value);
         }
 
         bool setContent(const char *buf, size_t len) override {
@@ -43,4 +42,5 @@ public:
 
 private:
         httpd_req_t *req;
+        char *status;
 };

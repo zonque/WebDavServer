@@ -7,8 +7,8 @@
 
 class WebDavRequestSoup : public WebDavRequest {
 public:
-        WebDavRequestSoup(SoupMessage *msg, std::string path) : WebDavRequest(path), msg(msg), offset(0) {}
-        ~WebDavRequestSoup() {}
+        WebDavRequestSoup(SoupMessage *msg, std::string path) :
+                WebDavRequest(path), msg(msg), offset(0) {}
 
         std::string getHeader(std::string name) {
                 const char *s = soup_message_headers_get_one(msg->request_headers, name.c_str());
