@@ -73,15 +73,15 @@ server_callback(SoupServer        *server,
   soup_message_set_status(msg, ret);
 
   printf("<<< %s %s  (ret %d)\n", msg->method, path, ret);
-
-  resp.flush();
+  resp.flushHeaders();
+  resp.closeBody();
 }
 
 int main (int argc, char **argv)
 {
   GMainLoop *loop;
   SoupServer *server;
-  WebDavServer ws("./dav-root", "/dav");
+  WebDavServer ws("dav-root", "/dav");
 
   server = soup_server_new(SOUP_SERVER_SERVER_HEADER, "webdav-emulator", NULL);
   if (!server) {

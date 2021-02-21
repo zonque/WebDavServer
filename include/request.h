@@ -1,9 +1,6 @@
 #pragma once
 
 #include <string>
-#include <tinyxml2.h>
-
-using namespace tinyxml2;
 
 class WebDavRequest {
 public:
@@ -17,7 +14,6 @@ public:
 
         bool parseRequest();
         std::string getDestination();
-        bool parseBodyXML();
 
         std::string getPath() { return path; }
         enum Depth getDepth() { return depth; }
@@ -32,6 +28,4 @@ protected:
         std::string path;
         enum Depth depth;
         bool overwrite;
-
-        XMLDocument xml;
 };

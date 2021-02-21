@@ -17,7 +17,7 @@ public:
 
                 std::string s;
                 s.resize(len);
-                httpd_req_get_hdr_value_str(req, name.c_str(), &s[0], s.capacity());
+                httpd_req_get_hdr_value_str(req, name.c_str(), &s[0], len+1);
 
                 return s;
         }

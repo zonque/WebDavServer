@@ -20,10 +20,6 @@ A POSIX compatible file system must be provided. In particular, the code uses th
         * `unlink()`
         * `rename()`
 
-# Dependencies
-
-* [libtinyxml2](https://github.com/leethomason/tinyxml2/)
-
 # Current limitations
 
 * No support for locking/unlocking

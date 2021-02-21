@@ -7,11 +7,9 @@ BASEDIR=../..
 CPPFLAGS = \
 	-Wall -Werror \
 	-I. -I$(BASEDIR)/include \
-	 `pkg-config --cflags libsoup-2.4` \
-	 `pkg-config --cflags tinyxml2`
+	 `pkg-config --cflags libsoup-2.4`
 LDFLAGS = \
-	`pkg-config --libs libsoup-2.4` \
-	`pkg-config --libs tinyxml2`
+	`pkg-config --libs libsoup-2.4`
 
 server.o: $(BASEDIR)/src/server.cpp $(BASEDIR)/include/server.h
 	g++ $(CPPFLAGS) -c -o $@ $<

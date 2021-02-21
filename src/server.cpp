@@ -46,7 +46,7 @@ static std::string urlEncode(const std::string &value) {
                 std::string::value_type c = (*i);
 
                 // Keep alphanumeric and other accepted characters intact
-                if (isalnum((unsigned char) c) || c == '-' || c == '_' || c == '.' || c == '~' || c == '/') {
+                if (isalnum((unsigned char) c) || c == '-' || c == '_' || c == '.' || c == '~' || c == '/' || c == ' ') {
                         escaped << c;
                         continue;
                 }
@@ -91,20 +91,44 @@ std::string WebDavServer::formatTime(time_t t) {
         return std::string(buf);
 }
 
+static void xmlElement(std::ostringstream &s, const char *name, const char *value) {
+        s << "<" << name << ">" << value << "</" << name << ">\n";
+}
+
+void WebDavServer::sendMultiStatusResponse(WebDavResponse &resp, WebDavMultiStatusResponse &msr) {
+        std::ostringstream s;
+
+        s << "<response>\n";
+        xmlElement(s, "href", msr.href.c_str());
+        s << "<propstat><prop>\n";
+
+        for (const auto &p: msr.props)
+                xmlElement(s, p.first.c_str(), p.second.c_str());
+
+        xmlElement(s, "resourcetype", msr.isCollection ? "<collection/>" : "");
+
+        s << "</prop>\n";
+        xmlElement(s, "status", msr.status.c_str());
+        
+        s << "</propstat></response>\n";
+
+        resp.sendChunk(s.str().c_str());
+}
+
 int WebDavServer::sendPropResponse(WebDavResponse &resp, std::string path, int recurse) {
         struct stat sb;
         int ret = stat(path.c_str(), &sb);
-
         if (ret < 0)
                 return -errno;
 
         std::string uri = pathToURI(path);
+// printf("%s() path >%s< uri >%s<\n", __func__, path.c_str(), uri.c_str());
 
         WebDavMultiStatusResponse r;
 
         r.href = uri,
         r.status = "HTTP/1.1 200 OK",
-        
+
         r.props["creationdate"] = formatTime(sb.st_ctime);
         r.props["getlastmodified"] = formatTime(sb.st_mtime);
         r.props["displayname"] = basename(path.c_str());
@@ -117,7 +141,7 @@ int WebDavServer::sendPropResponse(WebDavResponse &resp, std::string path, int r
                 r.props["getetag"] = std::to_string(sb.st_ino);
         }
 
-        resp.responses.push_back(r);
+        sendMultiStatusResponse(resp, r);
 
         if (r.isCollection && recurse > 0) {
                 DIR *dir = opendir(path.c_str());
@@ -208,6 +232,7 @@ int WebDavServer::doGet(WebDavRequest &req, WebDavResponse &resp) {
         resp.setHeader("Content-Length", sb.st_size);
         resp.setHeader("ETag", sb.st_ino);
         resp.setHeader("Last-Modified", formatTime(sb.st_mtime));
+        // resp.flush();
 
         ret = 0;
 
@@ -321,27 +346,29 @@ int WebDavServer::doOptions(WebDavRequest &req, WebDavResponse &resp) {
 }
 
 int WebDavServer::doPropfind(WebDavRequest &req, WebDavResponse &resp) {
+        bool exists = (req.getPath() == rootPath) ||
+                        (access(req.getPath().c_str(), R_OK) == 0);
+        if (!exists)
+                return 404;
+
         int recurse =
                 (req.getDepth() == WebDavRequest::DEPTH_0) ? 0 :
                 (req.getDepth() == WebDavRequest::DEPTH_1) ? 1 :
                 32;
 
-        std::string contentType = req.getHeader("Content-Type");
+        resp.setStatus(207, "Multi-Status");
+        resp.setHeader("Transfer-Encoding", "chunked");
+        resp.setContentType("text/xml; charset=\"utf-8\"");
+        resp.flushHeaders();
 
-        if (contentType == "application/xml" && !req.parseBodyXML())
-                return 400;
+        resp.sendChunk("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
+        resp.sendChunk("<multistatus xmlns=\"DAV:\">\n");
 
-        int ret = sendPropResponse(resp, req.getPath(), recurse);
-        switch (ret) {
-        case 0:
-                return 207;
+        sendPropResponse(resp, req.getPath(), recurse);
+        resp.sendChunk("</multistatus>\n");
+        resp.closeChunk();
 
-        case -ENOENT:
-                return 404;
-
-        default:
-                return 500;
-        }
+        return 207;
 }
 
 int WebDavServer::doProppatch(WebDavRequest &req, WebDavResponse &resp) {

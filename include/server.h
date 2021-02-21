@@ -29,4 +29,5 @@ private:
 
         std::string formatTime(time_t t);
         int sendPropResponse(WebDavResponse &resp, std::string path, int recurse);
+        void sendMultiStatusResponse(WebDavResponse &resp, WebDavMultiStatusResponse &msr);
 };

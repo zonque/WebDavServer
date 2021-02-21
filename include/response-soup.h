@@ -7,7 +7,7 @@
 
 class WebDavResponseSoup : public WebDavResponse {
 public:
-        WebDavResponseSoup(SoupMessage *msg) : msg(msg) {
+        WebDavResponseSoup(SoupMessage *msg) : msg(msg), contentType("text/plain") {
                 setDavHeaders();
         }
         ~WebDavResponseSoup() {}
@@ -16,22 +16,31 @@ public:
                 soup_message_set_status_full(msg, code, message.c_str());
         }
 
+        void setContentType(const char *ct) {
+                contentType = ct;
+        }
+
         void writeHeader(const char *header, const char *value) override {
                 soup_message_headers_append(msg->response_headers, header, value);
         }
 
-        bool setContent(const char *buf, size_t len) override {
-                soup_message_set_response(msg, contentType.c_str(), SOUP_MEMORY_COPY, buf, len);
-                return true;
-        }
+        bool sendChunk(const char *buf, ssize_t len = -1) override {
+                if (len == -1)
+                        len = strlen(buf);
 
-        bool sendChunk(const char *buf, size_t len) override {
                 soup_message_body_append(msg->response_body, SOUP_MEMORY_COPY, buf, len);
                 return true;
         }
 
-        void closeChunk() override {}
+        void closeChunk() override {
+                soup_message_body_complete(msg->response_body);
+        }
+
+        void closeBody() override {
+                soup_message_set_response(msg, contentType.c_str(), SOUP_MEMORY_COPY, NULL, 0);
+        }
 
 private:
         SoupMessage *msg;
+        std::string contentType;
 };
