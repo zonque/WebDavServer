@@ -17,6 +17,13 @@ static esp_err_t webdav_handler(httpd_req_t *httpd_req) {
         WebDavResponseEspIdf resp(httpd_req);
         int ret;
 
+        if (!req.parseRequest()) {
+                resp.setStatus(400, "Invalid request");
+                resp.flushHeaders();
+                resp.closeBody();
+                return ESP_OK;
+        }
+
         // httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         // httpd_resp_set_hdr(req, "Access-Control-Allow-Headers", "*");
         // httpd_resp_set_hdr(req, "Access-Control-Allow-Methods", "*");
@@ -64,6 +71,10 @@ static esp_err_t webdav_handler(httpd_req_t *httpd_req) {
                         ret = ESP_ERR_HTTPD_INVALID_REQ;
                         break;
         }
+
+        resp.setStatus(ret, "");
+        resp.flushHeaders();
+        resp.closeBody();
 
         return ret;
 }
