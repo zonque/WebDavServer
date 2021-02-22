@@ -1,6 +1,6 @@
 # WebDav server for POSIX-compatible systems
 
-This package implements a WebDav server for systems with a POSIX-compatible file system storage.
+This package implements a simple WebDav server for systems with a POSIX-compatible file system storage. The server has limited functionality and primarily targets embedded platforms with limited resources.
 
 # Compatibility
 
@@ -24,6 +24,17 @@ A POSIX compatible file system must be provided. In particular, the code uses th
 
 * No support for locking/unlocking
 * No support for property writing
+
+# Installation
+
+## As ESP-IDF component
+
+In your project repository, add this component as sub-module:
+
+```
+git submodule init
+git submodule add https://github.com/zonque/WebDavServer.git components/webdav
+```
 
 # License
 
