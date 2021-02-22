@@ -12,7 +12,9 @@
 #include "file-utils.h"
 #include "server.h"
 
-WebDavServer::WebDavServer(std::string rootPath, std::string rootURI) :
+using namespace WebDav;
+
+Server::Server(std::string rootPath, std::string rootURI) :
         rootPath(rootPath), rootURI(rootURI) {}
 
 static std::string urlDecode(std::string str){
@@ -61,7 +63,7 @@ static std::string urlEncode(const std::string &value) {
 }
 
 
-std::string WebDavServer::uriToPath(std::string uri) {
+std::string Server::uriToPath(std::string uri) {
         if (uri.find(rootURI) != 0)
                 return rootPath;
 
@@ -72,7 +74,7 @@ std::string WebDavServer::uriToPath(std::string uri) {
         return urlDecode(path);
 }
 
-std::string WebDavServer::pathToURI(std::string path) {
+std::string Server::pathToURI(std::string path) {
         if (path.find(rootPath) != 0)
                 return "";
 
@@ -82,7 +84,7 @@ std::string WebDavServer::pathToURI(std::string path) {
         return urlEncode(uri);
 }
 
-std::string WebDavServer::formatTime(time_t t) {
+std::string Server::formatTime(time_t t) {
         char buf[32];
         struct tm *lt = localtime(&t);
         // strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S", lt);
@@ -95,7 +97,7 @@ static void xmlElement(std::ostringstream &s, const char *name, const char *valu
         s << "<" << name << ">" << value << "</" << name << ">\n";
 }
 
-void WebDavServer::sendMultiStatusResponse(WebDavResponse &resp, WebDavMultiStatusResponse &msr) {
+void Server::sendMultiStatusResponse(Response &resp, MultiStatusResponse &msr) {
         std::ostringstream s;
 
         s << "<response>\n";
@@ -115,7 +117,7 @@ void WebDavServer::sendMultiStatusResponse(WebDavResponse &resp, WebDavMultiStat
         resp.sendChunk(s.str().c_str());
 }
 
-int WebDavServer::sendPropResponse(WebDavResponse &resp, std::string path, int recurse) {
+int Server::sendPropResponse(Response &resp, std::string path, int recurse) {
         struct stat sb;
         int ret = stat(path.c_str(), &sb);
         if (ret < 0)
@@ -124,7 +126,7 @@ int WebDavServer::sendPropResponse(WebDavResponse &resp, std::string path, int r
         std::string uri = pathToURI(path);
 // printf("%s() path >%s< uri >%s<\n", __func__, path.c_str(), uri.c_str());
 
-        WebDavMultiStatusResponse r;
+        MultiStatusResponse r;
 
         r.href = uri,
         r.status = "HTTP/1.1 200 OK",
@@ -166,7 +168,7 @@ int WebDavServer::sendPropResponse(WebDavResponse &resp, std::string path, int r
 
 // http entry points
 
-int WebDavServer::doCopy(WebDavRequest &req, WebDavResponse &resp) {
+int Server::doCopy(Request &req, Response &resp) {
         if (req.getDestination().empty())
                 return 400;
 
@@ -174,8 +176,8 @@ int WebDavServer::doCopy(WebDavRequest &req, WebDavResponse &resp) {
                 return 403;
 
         int recurse =
-                (req.getDepth() == WebDavRequest::DEPTH_0) ? 0 :
-                (req.getDepth() == WebDavRequest::DEPTH_1) ? 1 :
+                (req.getDepth() == Request::DEPTH_0) ? 0 :
+                (req.getDepth() == Request::DEPTH_1) ? 1 :
                 32;
 
         std::string destination = uriToPath(req.getDestination());
@@ -208,8 +210,8 @@ int WebDavServer::doCopy(WebDavRequest &req, WebDavResponse &resp) {
         return 0;
 }
 
-int WebDavServer::doDelete(WebDavRequest &req, WebDavResponse &resp) {
-        if (req.getDepth() != WebDavRequest::DEPTH_INFINITY)
+int Server::doDelete(Request &req, Response &resp) {
+        if (req.getDepth() != Request::DEPTH_INFINITY)
                 return 400;
 
         int ret = rm_rf(req.getPath().c_str());
@@ -219,7 +221,7 @@ int WebDavServer::doDelete(WebDavRequest &req, WebDavResponse &resp) {
         return 200;
 }
 
-int WebDavServer::doGet(WebDavRequest &req, WebDavResponse &resp) {
+int Server::doGet(Request &req, Response &resp) {
         struct stat sb;
         int ret = stat(req.getPath().c_str(), &sb);
         if (ret < 0)
@@ -260,7 +262,7 @@ int WebDavServer::doGet(WebDavRequest &req, WebDavResponse &resp) {
         return 500;
 }
 
-int WebDavServer::doHead(WebDavRequest &req, WebDavResponse &resp) {
+int Server::doHead(Request &req, Response &resp) {
         struct stat sb;
         int ret = stat(req.getPath().c_str(), &sb);
         if (ret < 0)
@@ -273,11 +275,11 @@ int WebDavServer::doHead(WebDavRequest &req, WebDavResponse &resp) {
         return 200;
 }
 
-int WebDavServer::doLock(WebDavRequest &req, WebDavResponse &resp) {
+int Server::doLock(Request &req, Response &resp) {
         return 501;
 }
 
-int WebDavServer::doMkcol(WebDavRequest &req, WebDavResponse &resp) {
+int Server::doMkcol(Request &req, Response &resp) {
         if (req.getContentLength() != 0)
                 return 415;
 
@@ -297,7 +299,7 @@ int WebDavServer::doMkcol(WebDavRequest &req, WebDavResponse &resp) {
         }
 }
 
-int WebDavServer::doMove(WebDavRequest &req, WebDavResponse &resp) {
+int Server::doMove(Request &req, Response &resp) {
         if (req.getDestination().empty())
                 return 400;
 
@@ -341,19 +343,19 @@ int WebDavServer::doMove(WebDavRequest &req, WebDavResponse &resp) {
         }
 }
 
-int WebDavServer::doOptions(WebDavRequest &req, WebDavResponse &resp) {
+int Server::doOptions(Request &req, Response &resp) {
         return 200;
 }
 
-int WebDavServer::doPropfind(WebDavRequest &req, WebDavResponse &resp) {
+int Server::doPropfind(Request &req, Response &resp) {
         bool exists = (req.getPath() == rootPath) ||
                         (access(req.getPath().c_str(), R_OK) == 0);
         if (!exists)
                 return 404;
 
         int recurse =
-                (req.getDepth() == WebDavRequest::DEPTH_0) ? 0 :
-                (req.getDepth() == WebDavRequest::DEPTH_1) ? 1 :
+                (req.getDepth() == Request::DEPTH_0) ? 0 :
+                (req.getDepth() == Request::DEPTH_1) ? 1 :
                 32;
 
         resp.setStatus(207, "Multi-Status");
@@ -371,7 +373,7 @@ int WebDavServer::doPropfind(WebDavRequest &req, WebDavResponse &resp) {
         return 207;
 }
 
-int WebDavServer::doProppatch(WebDavRequest &req, WebDavResponse &resp) {
+int Server::doProppatch(Request &req, Response &resp) {
         bool exists = access(req.getPath().c_str(), R_OK) == 0;
 
         if (!exists)
@@ -380,7 +382,7 @@ int WebDavServer::doProppatch(WebDavRequest &req, WebDavResponse &resp) {
         return 501;
 }
 
-int WebDavServer::doPut(WebDavRequest &req, WebDavResponse &resp) {
+int Server::doPut(Request &req, Response &resp) {
         bool exists = access(req.getPath().c_str(), R_OK) == 0;
         FILE *f = fopen(req.getPath().c_str(), "w");
         if (!f)
@@ -421,6 +423,6 @@ int WebDavServer::doPut(WebDavRequest &req, WebDavResponse &resp) {
         return 201;
 }
 
-int WebDavServer::doUnlock(WebDavRequest &req, WebDavResponse &resp) {
+int Server::doUnlock(Request &req, Response &resp) {
         return 501;
 }

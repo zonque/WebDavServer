@@ -4,7 +4,9 @@
 #include <vector>
 #include <map>
 
-class WebDavMultiStatusResponse {
+namespace WebDav {
+
+class MultiStatusResponse {
 public:
         std::string href;
         std::string status;
@@ -12,10 +14,10 @@ public:
         bool isCollection;
 };
 
-class WebDavResponse {
+class Response {
 public:
-        WebDavResponse() {}
-        ~WebDavResponse() {}
+        Response() {}
+        ~Response() {}
 
         void setDavHeaders();
         void setHeader(std::string header, std::string value);
@@ -34,3 +36,5 @@ protected:
 
         std::map<std::string, std::string> headers;
 };
+
+} // namespace

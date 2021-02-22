@@ -2,7 +2,9 @@
 
 #include "request.h"
 
-bool WebDavRequest::parseRequest() {
+using namespace WebDav;
+
+bool Request::parseRequest() {
         std::string s;
 
         s = getHeader("Overwrite");
@@ -26,7 +28,7 @@ bool WebDavRequest::parseRequest() {
         return true;
 }
 
-std::string WebDavRequest::getDestination() {
+std::string Request::getDestination() {
         std::string destination = getHeader("Destination");
         std::string host = getHeader("Host");
 

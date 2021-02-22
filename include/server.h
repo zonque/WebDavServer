@@ -3,31 +3,35 @@
 #include "request.h"
 #include "response.h"
 
-class WebDavServer {
+namespace WebDav {
+
+class Server {
 public:
-        WebDavServer(std::string rootPath, std::string rootURI);
-        ~WebDavServer() {};
+        Server(std::string rootPath, std::string rootURI);
+        ~Server() {};
 
         std::string pathToURI(std::string path);
         std::string uriToPath(std::string uri);
 
-        int doCopy(WebDavRequest &req, WebDavResponse &resp);
-        int doDelete(WebDavRequest &req, WebDavResponse &resp);
-        int doGet(WebDavRequest &req, WebDavResponse &resp);
-        int doHead(WebDavRequest &req, WebDavResponse &resp);
-        int doLock(WebDavRequest &req, WebDavResponse &resp);
-        int doMkcol(WebDavRequest &req, WebDavResponse &resp);
-        int doMove(WebDavRequest &req, WebDavResponse &resp);
-        int doOptions(WebDavRequest &req, WebDavResponse &resp);
-        int doPropfind(WebDavRequest &req, WebDavResponse &resp);
-        int doProppatch(WebDavRequest &req, WebDavResponse &resp);
-        int doPut(WebDavRequest &req, WebDavResponse &resp);
-        int doUnlock(WebDavRequest &req, WebDavResponse &resp);
+        int doCopy(Request &req, Response &resp);
+        int doDelete(Request &req, Response &resp);
+        int doGet(Request &req, Response &resp);
+        int doHead(Request &req, Response &resp);
+        int doLock(Request &req, Response &resp);
+        int doMkcol(Request &req, Response &resp);
+        int doMove(Request &req, Response &resp);
+        int doOptions(Request &req, Response &resp);
+        int doPropfind(Request &req, Response &resp);
+        int doProppatch(Request &req, Response &resp);
+        int doPut(Request &req, Response &resp);
+        int doUnlock(Request &req, Response &resp);
 
 private:
         std::string rootPath, rootURI;
 
         std::string formatTime(time_t t);
-        int sendPropResponse(WebDavResponse &resp, std::string path, int recurse);
-        void sendMultiStatusResponse(WebDavResponse &resp, WebDavMultiStatusResponse &msr);
+        int sendPropResponse(Response &resp, std::string path, int recurse);
+        void sendMultiStatusResponse(Response &resp, MultiStatusResponse &msr);
 };
+
+} // namespace

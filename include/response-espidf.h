@@ -5,13 +5,14 @@
 
 #include "response.h"
 
-class WebDavResponseEspIdf : public WebDavResponse {
+namespace WebDav {
+class ResponseEspIdf : public Response {
 public:
-        WebDavResponseEspIdf(httpd_req_t *req) : req(req), status(NULL), chunked(false) {
+        ResponseEspIdf(httpd_req_t *req) : req(req), status(NULL), chunked(false) {
                 setDavHeaders();
         }
 
-        ~WebDavResponseEspIdf() {
+        ~ResponseEspIdf() {
                 free(status);
         }
 
@@ -54,3 +55,5 @@ private:
         char *status;
         bool chunked;
 };
+
+} // namespace

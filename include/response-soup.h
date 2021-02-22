@@ -5,12 +5,14 @@
 
 #include "response.h"
 
-class WebDavResponseSoup : public WebDavResponse {
+namespace WebDav {
+
+class ResponseSoup : public Response {
 public:
-        WebDavResponseSoup(SoupMessage *msg) : msg(msg), contentType("text/plain") {
+        ResponseSoup(SoupMessage *msg) : msg(msg), contentType("text/plain") {
                 setDavHeaders();
         }
-        ~WebDavResponseSoup() {}
+        ~ResponseSoup() {}
 
         void setStatus(int code, std::string message) override {
                 soup_message_set_status_full(msg, code, message.c_str());
@@ -44,3 +46,5 @@ private:
         SoupMessage *msg;
         std::string contentType;
 };
+
+} // namespace

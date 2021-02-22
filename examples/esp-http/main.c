@@ -12,9 +12,9 @@
 static const char *TAG = "webdav";
 
 static esp_err_t webdav_handler(httpd_req_t *httpd_req) {
-        WebDavServer *server = (WebDavServer *) httpd_req->user_ctx;
-        WebDavRequestEspIdf req(httpd_req, httpd_req->uri);
-        WebDavResponseEspIdf resp(httpd_req);
+        WebDav::Server *server = (WebDav::Server *) httpd_req->user_ctx;
+        WebDav::RequestEspIdf req(httpd_req, httpd_req->uri);
+        WebDav::ResponseEspIdf resp(httpd_req);
         int ret;
 
         if (!req.parseRequest()) {
@@ -80,7 +80,7 @@ static esp_err_t webdav_handler(httpd_req_t *httpd_req) {
 }
 
 void webdav_register(httpd_handle_t server, const char *root_path, const char *root_uri) {
-        WebDavServer *webDavServer = new WebDavServer(root_path, root_uri);
+        WebDav::Server *webDavServer = new WebDav::Server(root_path, root_uri);
 
         char *uri;
         asprintf(&uri, "%s/*", root_uri);

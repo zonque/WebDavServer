@@ -20,8 +20,8 @@ server_callback(SoupServer        *server,
                 SoupClientContext *client,
                 gpointer           user_data)
 {
-  WebDavServer *ws = (WebDavServer *) user_data;
-  WebDavResponseSoup resp(msg);
+  WebDav::Server *ws = (WebDav::Server *) user_data;
+  WebDav::ResponseSoup resp(msg);
 
   soup_message_headers_append(msg->response_headers, "Access-Control-Allow-Origin", "*");
   soup_message_headers_append(msg->response_headers, "Access-Control-Allow-Headers", "*");
@@ -35,7 +35,7 @@ server_callback(SoupServer        *server,
           return;
   }
 
-  WebDavRequestSoup req(msg, p);
+  WebDav::RequestSoup req(msg, p);
   if (!req.parseRequest()) {
           resp.setStatus(400, "Invalid headers");
           return;
@@ -81,7 +81,7 @@ int main (int argc, char **argv)
 {
   GMainLoop *loop;
   SoupServer *server;
-  WebDavServer ws("dav-root", "/dav");
+  WebDav::Server ws("dav-root", "/dav");
 
   server = soup_server_new(SOUP_SERVER_SERVER_HEADER, "webdav-emulator", NULL);
   if (!server) {

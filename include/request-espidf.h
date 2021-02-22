@@ -5,10 +5,12 @@
 
 #include "request.h"
 
-class WebDavRequestEspIdf : public WebDavRequest {
+namespace WebDav {
+
+class RequestEspIdf : public Request {
 public:
-        WebDavRequestEspIdf(httpd_req_t *req, std::string path) :
-                WebDavRequest(path), req(req) {}
+        RequestEspIdf(httpd_req_t *req, std::string path) :
+                Request(path), req(req) {}
 
         std::string getHeader(std::string name) override {
                 size_t len = httpd_req_get_hdr_value_len(req, name.c_str());
@@ -41,3 +43,5 @@ public:
 private:
         httpd_req_t *req;
 };
+
+} // namespace

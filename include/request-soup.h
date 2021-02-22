@@ -5,10 +5,11 @@
 
 #include "request.h"
 
-class WebDavRequestSoup : public WebDavRequest {
+namespace WebDav {
+
+class RequestSoup : public Request {
 public:
-        WebDavRequestSoup(SoupMessage *msg, std::string path) :
-                WebDavRequest(path), msg(msg), offset(0) {}
+        RequestSoup(SoupMessage *msg, std::string path) : Request(path), msg(msg), offset(0) {}
 
         std::string getHeader(std::string name) {
                 const char *s = soup_message_headers_get_one(msg->request_headers, name.c_str());
@@ -33,3 +34,5 @@ private:
         SoupMessage *msg;
         goffset offset;
 };
+
+} // namespace

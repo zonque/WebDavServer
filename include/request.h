@@ -2,7 +2,9 @@
 
 #include <string>
 
-class WebDavRequest {
+namespace WebDav {
+
+class Request {
 public:
         enum Depth {
                 DEPTH_0 = 0,
@@ -10,7 +12,7 @@ public:
                 DEPTH_INFINITY = 2,
         };
 
-        WebDavRequest(std::string path) : path(path), depth(DEPTH_INFINITY), overwrite(true) {}
+        Request(std::string path) : path(path), depth(DEPTH_INFINITY), overwrite(true) {}
 
         bool parseRequest();
         std::string getDestination();
@@ -29,3 +31,5 @@ protected:
         enum Depth depth;
         bool overwrite;
 };
+
+} // namespace
